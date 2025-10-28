@@ -70,10 +70,11 @@ fi
 
 echo "Determining next available /$PREFIX_LENGTH subnet in '$VNET_NAME'..." >&2
 
-if ! NEXT_SUBNET=$(printf '%s' "$VNET_JSON" | python3 - "$PREFIX_LENGTH" "$VNET_NAME" "$RESOURCE_GROUP" <<'PY'
+if ! NEXT_SUBNET=$(VNET_JSON_CONTENT="$VNET_JSON" python3 - "$PREFIX_LENGTH" "$VNET_NAME" "$RESOURCE_GROUP" <<'PY'
 import json
 import ipaddress
 import sys
+import os
 
 
 def gather_subnets(entries):
@@ -153,7 +154,7 @@ def main():
     vnet_name = sys.argv[2]
     resource_group = sys.argv[3] if len(sys.argv) > 3 and sys.argv[3] else None
 
-    raw = sys.stdin.read().strip()
+    raw = os.environ.get("VNET_JSON_CONTENT", "").strip()
     if not raw:
         sys.stderr.write("Azure CLI returned no data.\n")
         return 1
